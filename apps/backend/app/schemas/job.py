@@ -65,7 +65,8 @@ class JobBase(BaseModel):
             )
 
         return self
-
+class JobCreate(JobBase):
+    pass
 from typing import Optional
 class JobUpdate(BaseModel):
 
