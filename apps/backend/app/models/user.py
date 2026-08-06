@@ -1,7 +1,7 @@
 import uuid
 from datetime import datetime
 from enum import Enum
-
+from sqlalchemy.orm import relationship
 from sqlalchemy import Boolean, DateTime, String
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column
@@ -60,3 +60,8 @@ class User(Base):
         default=datetime.utcnow,
         onupdate=datetime.utcnow,
     )
+    jobs = relationship(
+        "Job",
+        back_populates="creator",
+        cascade="all, delete-orphan",
+    )  
