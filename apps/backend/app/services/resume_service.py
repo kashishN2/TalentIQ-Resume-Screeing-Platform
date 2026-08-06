@@ -269,3 +269,33 @@ class ResumeService:
             "message": "Upload completed successfully.",
     
         }
+
+    def get_resume(
+        self,
+        resume_id,
+    ):
+        return self.resume_repo.get_by_id(
+            resume_id
+        )
+    
+    
+    def get_resumes_by_job(
+        self,
+        job_id,
+        skip,
+        limit,
+    ):
+        return self.resume_repo.get_by_job(
+            job_id,
+            skip,
+            limit,
+        )
+    
+    
+    def count_resumes(
+        self,
+        job_id,
+    ):
+        return self.resume_repo.count_by_job(
+            job_id
+        )
