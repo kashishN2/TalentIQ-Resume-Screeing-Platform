@@ -78,3 +78,14 @@ class JobRepository:
         self.db.delete(job)
 
         self.db.commit()
+    def get_by_title(
+        self,
+        title: str,
+    ):
+    
+        stmt = (
+            select(Job)
+            .where(Job.title == title)
+        )
+    
+        return self.db.scalar(stmt)
