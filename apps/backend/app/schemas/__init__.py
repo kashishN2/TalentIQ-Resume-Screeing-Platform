@@ -6,6 +6,7 @@ from .auth import (
 )
 from .auth import *
 from .job import *
+from .resume import *
 
 __all__ = [
     "LoginRequest",
