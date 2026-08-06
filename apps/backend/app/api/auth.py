@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi.security import OAuth2PasswordRequestForm
 
 from app.core.dependencies import (
     get_auth_service,
@@ -11,29 +12,25 @@ from app.schemas.auth import (
     UserResponse,
 )
 
-from app.services.auth_service import AuthService
 
+from app.services.auth_service import AuthService
 router = APIRouter(
     prefix="/auth",
     tags=["Authentication"],
 )
-@router.post(
-    "/login",
-    response_model=LoginResponse,
-)
+@router.post("/login", response_model=LoginResponse)
 def login(
-    request: LoginRequest,
+    form_data: OAuth2PasswordRequestForm = Depends(),
     auth_service: AuthService = Depends(get_auth_service),
 ):
-
     result = auth_service.login(
-        request.email,
-        request.password,
+        form_data.username,  # email
+        form_data.password,
     )
 
     if result is None:
         raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
+            status_code=401,
             detail="Invalid email or password",
         )
 

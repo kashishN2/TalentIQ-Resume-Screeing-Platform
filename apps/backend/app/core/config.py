@@ -10,7 +10,9 @@ class Settings(BaseSettings):
     ALGORITHM: str
 
     ACCESS_TOKEN_EXPIRE_MINUTES: int
-
+    DEFAULT_ADMIN_NAME: str
+    DEFAULT_ADMIN_EMAIL: str
+    DEFAULT_ADMIN_PASSWORD: str
     class Config:
         env_file = ".env"
 
@@ -21,3 +23,4 @@ def get_settings():
 
 
 settings = get_settings()
+settings.DEFAULT_ADMIN_EMAIL
