@@ -1,8 +1,16 @@
-from pydantic_settings import BaseSettings
 from functools import lru_cache
+
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
+
+    model_config = SettingsConfigDict(
+        env_file=".env",
+        env_file_encoding="utf-8",
+        extra="ignore",
+    )
+
     DATABASE_URL: str
 
     SECRET_KEY: str
@@ -10,11 +18,17 @@ class Settings(BaseSettings):
     ALGORITHM: str
 
     ACCESS_TOKEN_EXPIRE_MINUTES: int
+
     DEFAULT_ADMIN_NAME: str
+
     DEFAULT_ADMIN_EMAIL: str
+
     DEFAULT_ADMIN_PASSWORD: str
-    class Config:
-        env_file = ".env"
+
+    # Gemini configuration
+    GEMINI_API_KEY: str
+
+    GEMINI_MODEL: str = "gemini-3.5-flash-lite"
 
 
 @lru_cache
@@ -23,4 +37,3 @@ def get_settings():
 
 
 settings = get_settings()
-settings.DEFAULT_ADMIN_EMAIL
