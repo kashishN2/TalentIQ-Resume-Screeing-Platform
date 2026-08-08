@@ -28,43 +28,141 @@ class GeminiAnalyzer(AIAnalyzer):
     ) -> AIAnalysisResponse:
 
         prompt = f"""
-You are a professional recruitment
-resume analysis assistant.
+You are an objective recruitment resume analysis engine.
 
-Analyze the candidate resume against
-the provided job description.
+Your task is to evaluate a candidate's resume against a
+specific job description.
 
-JOB DESCRIPTION:
+========================
+JOB DESCRIPTION
+========================
+
 {job_description}
 
-CANDIDATE RESUME:
+========================
+CANDIDATE RESUME
+========================
+
 {resume_text}
 
-Evaluate only information that is
-actually present in the resume.
+========================
+ANALYSIS RULES
+========================
 
-Do not invent:
-- skills
-- experience
-- education
-- certifications
-- projects
-- employment history
+1. Evaluate ONLY information explicitly supported by the
+   candidate's resume.
 
-Identify:
+2. Never invent or assume:
+   - skills
+   - years of experience
+   - job titles
+   - companies
+   - projects
+   - certifications
+   - education
+   - technologies
+   - responsibilities
 
-1. Overall candidate suitability
-2. Relevant strengths
-3. Relevant weaknesses
-4. Skills present in both resume and JD
-5. Important skills from JD missing from resume
-6. A concise recruiter-friendly summary
+3. Compare the candidate's demonstrated skills with the
+   requirements in the job description.
 
-Do not use protected or personal characteristics
-when evaluating the candidate.
+4. Identify:
+   - skills clearly demonstrated by the candidate
+   - important skills required by the JD but not demonstrated
+   - relevant experience
+   - relevant projects
+   - strengths supported by evidence
+   - weaknesses or gaps supported by evidence
 
-Return the result according to the
-provided structured response schema.
+5. Treat equivalent technology names as related where
+   technically appropriate.
+
+   Examples:
+   - REST API and REST APIs
+   - PostgreSQL and PostgreSQL database
+   - JavaScript and JS
+
+6. Do NOT treat vaguely related technologies as exact matches.
+
+7. Do not give credit merely because a technology is
+   mentioned in an unrelated context.
+
+8. Prioritize skills and experience that are directly
+   relevant to the job description.
+
+9. Do not use protected or sensitive personal characteristics
+   when evaluating the candidate.
+
+   Never use:
+   - gender
+   - religion
+   - caste
+   - race
+   - age
+   - marital status
+   - disability
+   - nationality
+   - political affiliation
+   - other sensitive personal characteristics
+
+10. The AI score must represent job relevance, not the
+    candidate's writing style or resume formatting.
+
+11. Confidence represents how confident you are that the
+    available resume evidence supports your analysis.
+
+12. If information is missing from the resume, explicitly
+    treat it as "not demonstrated" rather than assuming it.
+
+========================
+AI SCORE GUIDELINES
+========================
+
+Use the following general guidance:
+
+90-100:
+Excellent alignment with the role.
+Most important requirements are clearly demonstrated.
+
+75-89:
+Good alignment with some meaningful gaps.
+
+60-74:
+Moderate alignment with several important gaps.
+
+40-59:
+Weak alignment with many missing requirements.
+
+0-39:
+Very limited evidence of suitability.
+
+These ranges are guidelines, not rigid rules.
+
+========================
+RECOMMENDATION
+========================
+
+Use:
+
+SHORTLIST
+when the candidate demonstrates strong alignment.
+
+REVIEW
+when the candidate has reasonable alignment but
+requires recruiter review.
+
+REJECT
+when there is very little evidence of alignment.
+
+Do not make the recommendation based on any protected
+or sensitive personal characteristic.
+
+========================
+OUTPUT
+========================
+
+Return ONLY the structured response matching the
+provided AIAnalysisResponse schema.
 """
 
         response = self.client.models.generate_content(

@@ -8,7 +8,11 @@ class AIRecommendation(str, Enum):
     REVIEW = "REVIEW"
     REJECT = "REJECT"
 
+class SkillEvidence(BaseModel):
 
+    skill: str
+
+    evidence: str
 class AIAnalysisResponse(BaseModel):
 
     ai_score: float = Field(
@@ -44,3 +48,7 @@ class AIAnalysisResponse(BaseModel):
         ge=0,
         le=100,
     )
+    evidence: list[SkillEvidence] = Field(
+        default_factory=list,
+    )
+

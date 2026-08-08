@@ -1,11 +1,25 @@
 from app.schemas.ai_analysis import (
     AIAnalysisResponse,
     AIRecommendation,
+    SkillEvidence,
 )
 
 from app.services.ai.base import AIAnalyzer
 
-
+evidence=[
+    SkillEvidence(
+        skill="Python",
+        evidence=(
+            "Python is listed in the candidate's skills."
+        ),
+    ),
+    SkillEvidence(
+        skill="FastAPI",
+        evidence=(
+            "FastAPI is listed in the candidate's skills."
+        ),
+    ),
+],
 class MockAIAnalyzer(AIAnalyzer):
 
     def analyze(
@@ -47,3 +61,4 @@ class MockAIAnalyzer(AIAnalyzer):
 
             confidence=80,
         )
+
