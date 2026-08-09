@@ -117,3 +117,22 @@ class ResumeRepository:
         )
     
         return self.db.scalars(stmt).all()
+
+    def get_analyzed_by_job(
+        self,
+        job_id: uuid.UUID,
+    ):
+        stmt = (
+            select(Resume)
+            .where(
+                Resume.job_id == job_id
+            )
+            .where(
+                Resume.upload_status == UploadStatus.ANALYZED
+            )
+            .order_by(
+                Resume.created_at.desc()
+            )
+        )
+    
+        return self.db.scalars(stmt).all()

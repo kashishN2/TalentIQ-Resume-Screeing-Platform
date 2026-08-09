@@ -29,8 +29,15 @@ class Settings(BaseSettings):
     GEMINI_API_KEY: str
 
     GEMINI_MODEL: str = "gemini-3.5-flash-lite"
-
-
+    # Email configuration
+    EMAIL_MODE: str = "smtp"
+    
+    SMTP_HOST: str = "smtp.gmail.com"
+    SMTP_PORT: int = 587
+    SMTP_USERNAME: str
+    SMTP_PASSWORD: str
+    SMTP_FROM: str
+    
 @lru_cache
 def get_settings():
     return Settings()

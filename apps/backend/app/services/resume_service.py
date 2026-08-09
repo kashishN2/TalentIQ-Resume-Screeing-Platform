@@ -5,7 +5,8 @@ from pathlib import Path
 
 from fastapi import HTTPException, UploadFile, status
 from sqlalchemy.orm import Session
-
+from app.services.pdf_service import PDFService
+from app.services.parser_service import parse_resume
 from app.core.storage import (
     EXTRACTED_DIR,
     JOBS_DIR,
@@ -180,122 +181,118 @@ class ResumeService:
         job_id,
         stored_files,
     ):
-    
+
         resumes = []
-    
+
+        pdf_service = PDFService()
+
         for original, stored, path in stored_files:
-    
-            candidate = Path(original).stem.replace(
-                "_",
-                " ",
-            )
-    
-            resumes.append(
-    
-                Resume(
-    
-                    job_id=job_id,
-    
-                    candidate_name=candidate,
-    
-                    email=None,
-    
-                    phone=None,
-    
-                    original_filename=original,
-    
-                    stored_filename=stored,
-    
-                    file_path=str(path),
-    
-                    upload_status=UploadStatus.UPLOADED,
-    
+
+            text = pdf_service.extract_text(path)
+            parsed = parse_resume(text)
+
+            candidate_name = parsed.get("name")
+            email = parsed.get("email")
+            phone = parsed.get("phone")
+
+            if not candidate_name:
+                candidate_name = Path(original).stem.replace(
+                    "_",
+                    " ",
                 )
-    
+
+            resumes.append(
+                Resume(
+                    job_id=job_id,
+                    candidate_name=candidate_name,
+                    email=email,
+                    phone=phone,
+                    original_filename=original,
+                    stored_filename=stored,
+                    file_path=str(path),
+                    upload_status=UploadStatus.UPLOADED,
+                )
             )
-    
+
         return resumes
 
     def save_resumes(
         self,
         resumes,
     ):
-    
+
         self.resume_repo.bulk_create(
             resumes
         )
+
     def upload_zip(
         self,
         job_id,
         file,
     ):
-    
+
         self.validate_zip(file)
-    
+
         temp = self.save_temp_zip(file)
-    
+
         self.validate_size(temp)
-    
+
         self.validate_zip_file(temp)
-    
+
         extracted = self.extract_pdfs(temp)
-    
+
         folder = self.create_job_folder(job_id)
-    
+
         stored = self.move_resumes(
             extracted,
             folder,
         )
-    
+
         resumes = self.build_resume_objects(
             job_id,
             stored,
         )
-    
+
         self.save_resumes(
             resumes,
         )
-    
+
         temp.unlink()
-    
+
         return {
-    
             "job_id": job_id,
-    
             "uploaded": len(resumes),
-    
             "failed": 0,
-    
             "message": "Upload completed successfully.",
-    
         }
 
     def get_resume(
         self,
         resume_id,
     ):
+
         return self.resume_repo.get_by_id(
             resume_id
         )
-    
-    
+
     def get_resumes_by_job(
         self,
         job_id,
         skip,
         limit,
     ):
+
         return self.resume_repo.get_by_job(
             job_id,
             skip,
             limit,
         )
-    
-    
+
     def count_resumes(
         self,
         job_id,
     ):
+
         return self.resume_repo.count_by_job(
             job_id
         )

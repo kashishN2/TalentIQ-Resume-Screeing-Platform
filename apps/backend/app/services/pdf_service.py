@@ -1,8 +1,10 @@
-import fitz
-from app.utils.text_cleaner import (
-    TextCleaner,
-)
 from pathlib import Path
+
+import fitz
+
+from app.utils.text_cleaner import TextCleaner
+
+
 class PDFService:
 
     def extract_text(
@@ -10,64 +12,64 @@ class PDFService:
         pdf_path: Path,
     ) -> str:
 
-        document = fitz.open(pdf_path)
+        try:
+            document = fitz.open(pdf_path)
 
-        text = ""
+            text = ""
 
-        for page in document:
+            for page in document:
+                text += page.get_text()
 
-            text += page.get_text()
+            document.close()
 
-        document.close()
+        except Exception as exc:
+            raise ValueError(
+                f"Unable to read PDF: {exc}"
+            )
 
-        return TextCleaner.clean(text)
+        text = TextCleaner.clean(text)
 
         if not text.strip():
-        
             raise ValueError(
                 "No readable text found."
             )
+
+        return text
 
     def extract_multiple(
         self,
         paths,
     ):
-    
+
         result = {}
-    
+
         for path in paths:
-    
+
             try:
-    
                 text = self.extract_text(path)
-    
+
                 result[path] = text
-    
+
             except Exception:
-    
                 result[path] = None
-    
+
         return result
 
     def page_count(
         self,
-        pdf_path,
-    ):
-    
-        document = fitz.open(pdf_path)
-    
-        pages = len(document)
-    
-        document.close()
-    
-        return pages
+        pdf_path: Path,
+    ) -> int:
 
-    try:
-    
-        fitz.open(pdf_path)
-    
-    except Exception:
-    
-        raise ValueError(
-            "Corrupted PDF."
-        )
+        try:
+            document = fitz.open(pdf_path)
+
+            pages = len(document)
+
+            document.close()
+
+            return pages
+
+        except Exception as exc:
+            raise ValueError(
+                f"Unable to read PDF: {exc}"
+            )

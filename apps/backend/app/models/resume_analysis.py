@@ -55,6 +55,10 @@ class ResumeAnalysis(Base):
         Float,
         default=0,
     )
+    confidence: Mapped[float] = mapped_column(
+        Float,
+        default=0,
+    )
 
     matched_skills: Mapped[list] = mapped_column(
         JSONB,
@@ -75,7 +79,10 @@ class ResumeAnalysis(Base):
         JSONB,
         default=list,
     )
-
+    evidence: Mapped[list] = mapped_column(
+        JSONB,
+        default=list,
+    )
     recruiter_summary: Mapped[str] = mapped_column(
         Text,
         default="",
