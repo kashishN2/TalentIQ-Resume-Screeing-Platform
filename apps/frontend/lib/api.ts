@@ -9,11 +9,7 @@ import type {
   User,
 } from "./types";
 
-const API_URL = "/api/proxy";
-
-if (!API_URL) {
-  throw new Error("NEXT_PUBLIC_API_URL is not configured");
-}
+const API_BASE = "/api/proxy";
 
 async function apiFetch<T>(
   endpoint: string,
@@ -23,14 +19,16 @@ async function apiFetch<T>(
   const headers = new Headers(options.headers);
 
   if (options.body && !(options.body instanceof FormData)) {
-    headers.set("Content-Type", "application/json");
+    if (!headers.has("Content-Type")) {
+      headers.set("Content-Type", "application/json");
+    }
   }
 
   if (token) {
     headers.set("Authorization", `Bearer ${token}`);
   }
 
-  const response = await fetch(`${API_URL}${endpoint}`, {
+  const response = await fetch(`${API_BASE}${endpoint}`, {
     ...options,
     headers,
   });
@@ -40,7 +38,20 @@ async function apiFetch<T>(
 
     try {
       const error = await response.json();
-      message = error.detail ?? message;
+
+      if (typeof error?.detail === "string") {
+        message = error.detail;
+      } else if (Array.isArray(error?.detail)) {
+        message = error.detail
+          .map((item: unknown) =>
+            typeof item === "object" && item !== null
+              ? JSON.stringify(item)
+              : String(item),
+          )
+          .join(", ");
+      } else if (error?.detail) {
+        message = JSON.stringify(error.detail);
+      }
     } catch {
       // Keep the default error message.
     }
@@ -52,7 +63,7 @@ async function apiFetch<T>(
     return undefined as T;
   }
 
-  return response.json();
+  return response.json() as Promise<T>;
 }
 
 export async function login(
@@ -179,6 +190,30 @@ export async function sendCandidateDecision(
     {
       method: "POST",
       body: JSON.stringify({ decision }),
+    },
+    token,
+  );
+}
+
+export async function createJob(
+  token: string,
+  job: {
+    title: string;
+    department: string;
+    location: string;
+    employment_type: string;
+    experience_min: number;
+    experience_max: number;
+    description: string;
+    required_skills: string[];
+    minimum_score: number;
+  },
+): Promise<Job> {
+  return apiFetch(
+    "/jobs",
+    {
+      method: "POST",
+      body: JSON.stringify(job),
     },
     token,
   );
