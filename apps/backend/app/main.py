@@ -8,7 +8,7 @@ from app.api.resumes import (
     router as resume_router
 )
 from dotenv import load_dotenv
-
+from fastapi.middleware.cors import CORSMiddleware
 load_dotenv()
 app = FastAPI(
     title="TalentIQ API",
@@ -24,4 +24,14 @@ app.include_router(
 )
 app.include_router(
     emails.router
+)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "https://upgraded-goldfish-v4wxv5xjxjrhxg9w-3000.app.github.dev",
+    ],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
