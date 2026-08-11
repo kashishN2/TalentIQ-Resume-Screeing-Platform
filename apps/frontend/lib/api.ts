@@ -218,3 +218,16 @@ export async function createJob(
     token,
   );
 }
+
+export async function deleteJob(
+  token: string,
+  jobId: string,
+): Promise<void> {
+  return apiFetch<void>(
+    `/jobs/${jobId}`,
+    {
+      method: "DELETE",
+    },
+    token,
+  );
+}

@@ -5,6 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 
 import {
 analyzeJob,
+deleteJob,
 getJob,
 getResumes,
 uploadResumes,
@@ -25,7 +26,7 @@ const [resumes, setResumes] = useState<Resume[]>([]);
 const [loading, setLoading] = useState(true);
 const [uploading, setUploading] = useState(false);
 const [analyzing, setAnalyzing] = useState(false);
-
+const [deleting, setDeleting] = useState(false);
 const [error, setError] = useState("");
 const [uploadMessage, setUploadMessage] = useState("");
 const [analysisMessage, setAnalysisMessage] = useState("");
@@ -167,6 +168,42 @@ try {
 
 }
 
+
+async function handleDelete() {
+  const confirmed = window.confirm(
+    "Are you sure you want to delete this job?\n\n" +
+      "This will permanently delete the job and all uploaded resumes.\n\n" +
+      "This action cannot be undone.",
+  );
+
+  if (!confirmed) {
+    return;
+  }
+
+  const token = getToken();
+
+  if (!token) {
+    router.replace("/login");
+    return;
+  }
+
+  setDeleting(true);
+  setError("");
+
+  try {
+    await deleteJob(token, jobId);
+
+    router.push("/jobs");
+  } catch (err) {
+    setError(
+      err instanceof Error
+        ? err.message
+        : "Unable to delete the job.",
+    );
+    setDeleting(false);
+  }
+}
+
 function openUploadDialog() {
 if (uploading) {
 return;
@@ -241,15 +278,25 @@ className="mb-4 text-sm font-semibold text-indigo-600 hover:text-indigo-700"
         </div>
 
         {/* Single upload action */}
-        <button
-          onClick={openUploadDialog}
-          disabled={uploading}
-          className="rounded-xl bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-60"
-        >
-          {uploading
-            ? "Uploading..."
-            : "Upload Resumes (ZIP)"}
-        </button>
+        <div className="flex flex-wrap gap-3">
+          <button
+            onClick={openUploadDialog}
+            disabled={uploading || deleting}
+            className="rounded-xl bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            {uploading
+              ? "Uploading..."
+              : "Upload Resumes (ZIP)"}
+          </button>
+        
+          <button
+            onClick={handleDelete}
+            disabled={deleting || uploading || analyzing}
+            className="rounded-xl bg-red-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            {deleting ? "Deleting..." : "🗑 Delete Job"}
+          </button>
+        </div>
       </div>
     </div>
   </header>
