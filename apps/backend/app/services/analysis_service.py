@@ -118,54 +118,50 @@ class AnalysisService:
             recommendation = get_recommendation(
                 overall_score
             )
-
             # -----------------------------------
             # 6. Save analysis
             # -----------------------------------
-
-            analysis = ResumeAnalysis(
-                resume_id=resume.id,
-
-                ats_score=round(
-                    ats_score,
-                    2,
-                ),
-
-                ai_score=round(
-                    ai_score,
-                    2,
-                ),
-
-                overall_score=overall_score,
-
-                confidence=ai_result.confidence,
-
-                matched_skills=matched_skills,
-
-                missing_skills=missing_skills,
-
-                strengths=ai_result.strengths,
-
-                weaknesses=ai_result.weaknesses,
-
-                evidence=[
-                    evidence.model_dump()
-                    for evidence
-                    in ai_result.evidence
-                ],
-
-                recruiter_summary=ai_result.summary,
-
-                recommendation=recommendation,
-            )
-
-            if resume.analysis:
-
-                resume.analysis = analysis
-
-            else:
-
+            
+            analysis = resume.analysis
+            
+            if analysis is None:
+                analysis = ResumeAnalysis(
+                    resume_id=resume.id,
+                )
+            
                 self.db.add(analysis)
+            
+            # Update existing OR newly created analysis
+            analysis.ats_score = round(
+                ats_score,
+                2,
+            )
+            
+            analysis.ai_score = round(
+                ai_score,
+                2,
+            )
+            
+            analysis.overall_score = overall_score
+            
+            analysis.confidence = ai_result.confidence
+            
+            analysis.matched_skills = matched_skills
+            
+            analysis.missing_skills = missing_skills
+            
+            analysis.strengths = ai_result.strengths
+            
+            analysis.weaknesses = ai_result.weaknesses
+            
+            analysis.evidence = [
+                evidence.model_dump()
+                for evidence in ai_result.evidence
+            ]
+            
+            analysis.recruiter_summary = ai_result.summary
+            
+            analysis.recommendation = recommendation
 
             resume.upload_status = UploadStatus.ANALYZED
 
