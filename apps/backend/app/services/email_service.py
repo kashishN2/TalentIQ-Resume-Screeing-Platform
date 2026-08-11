@@ -110,12 +110,11 @@ class EmailService:
             subtype="html",
         )
 
-        with smtplib.SMTP(
+        with smtplib.SMTP_SSL(
             settings.SMTP_HOST,
             settings.SMTP_PORT,
         ) as server:
 
-            server.starttls()
 
             server.login(
                 settings.SMTP_USERNAME,
