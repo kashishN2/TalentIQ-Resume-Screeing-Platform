@@ -468,13 +468,37 @@ className="mb-4 text-sm font-semibold text-indigo-600 hover:text-indigo-700"
           </div>
 
           <button
-            onClick={handleAnalyze}
-            disabled={analyzing}
-            className="shrink-0 rounded-xl bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-60"
+            onClick={async () => {
+              const token = getToken();
+          
+              if (!token) {
+                router.replace("/login");
+                return;
+              }
+          
+              try {
+                setError("");
+                setUploadMessage("");
+          
+                setUploading(true);
+          
+                await analyzeJob(token, jobId);
+          
+                router.push(`/jobs/${jobId}/analysis`);
+              } catch (err) {
+                setError(
+                  err instanceof Error
+                    ? err.message
+                    : "Unable to analyze candidates.",
+                );
+              } finally {
+                setUploading(false);
+              }
+            }}
+            disabled={uploading}
+            className="rounded-xl bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-50"
           >
-            {analyzing
-              ? "Analyzing Candidates..."
-              : "Analyze Candidates"}
+            {uploading ? "Analyzing..." : "Analyze Candidates"}
           </button>
         </div>
       </section>
