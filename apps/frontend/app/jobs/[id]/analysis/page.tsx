@@ -3,7 +3,10 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 
-import { getJobAnalysis } from "../../../../lib/api";
+import {
+  getJobAnalysis,
+  sendCandidateDecision,
+} from "../../../../lib/api";
 import { getToken } from "../../../../lib/auth";
 import type {
   CandidateAnalysis,
@@ -180,6 +183,7 @@ export default function JobAnalysisPage() {
                   <CandidateCard
                     key={candidate.resume_id}
                     candidate={candidate}
+                    jobId={jobId}
                   />
                 ))}
               </div>
@@ -213,12 +217,57 @@ function SummaryCard({
 
 function CandidateCard({
   candidate,
+  jobId,
 }: {
   candidate: CandidateAnalysis;
+  jobId: string;
 }) {
+  const router = useRouter();
+  
+  const [sending, setSending] = useState<
+    "SHORTLIST" | "REJECT" | null
+  >(null);
+  
+  const [emailMessage, setEmailMessage] = useState("");
   const recommendation =
     candidate.recommendation;
+  async function handleDecision(
+    decision: "SHORTLIST" | "REJECT",
+  ) {
+    if (!candidate.email) {
+      setEmailMessage("Candidate email is not available.");
+      return;
+    }
 
+    const token = getToken();
+
+    if (!token) {
+      router.replace("/login");
+      return;
+    }
+
+    try {
+      setSending(decision);
+      setEmailMessage("");
+
+      const response = await sendCandidateDecision(
+        token,
+        jobId,
+        candidate.resume_id,
+        decision,
+      );
+
+      setEmailMessage(response.message);
+    } catch (err) {
+      setEmailMessage(
+        err instanceof Error
+          ? err.message
+          : "Failed to send email.",
+      );
+    } finally {
+      setSending(null);
+    }
+  }
   let recommendationClass =
     "bg-amber-50 text-amber-700";
 
@@ -331,7 +380,7 @@ function CandidateCard({
             </p>
           </div>
         )}
-
+        
         {candidate.evidence.length > 0 && (
           <div className="mt-6">
             <h4 className="text-sm font-semibold text-gray-900">
@@ -355,6 +404,45 @@ function CandidateCard({
               ))}
             </div>
           </div>
+        )}
+      </div>
+      <div className="mt-6 flex flex-wrap gap-3 border-t border-gray-100 pt-5">
+        <button
+          onClick={() => handleDecision("SHORTLIST")}
+          disabled={
+            sending !== null ||
+            !candidate.email
+          }
+          className="rounded-xl bg-emerald-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          {sending === "SHORTLIST"
+            ? "Sending..."
+            : "✓ Shortlist & Email"}
+        </button>
+      
+        <button
+          onClick={() => handleDecision("REJECT")}
+          disabled={
+            sending !== null ||
+            !candidate.email
+          }
+          className="rounded-xl bg-red-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          {sending === "REJECT"
+            ? "Sending..."
+            : "✕ Reject & Email"}
+        </button>
+      
+        {!candidate.email && (
+          <p className="w-full text-sm text-gray-400">
+            No email available for this candidate.
+          </p>
+        )}
+      
+        {emailMessage && (
+          <p className="w-full rounded-lg bg-gray-50 px-4 py-3 text-sm text-gray-600">
+            {emailMessage}
+          </p>
         )}
       </div>
     </article>
