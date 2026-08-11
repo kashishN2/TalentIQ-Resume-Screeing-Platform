@@ -2,7 +2,7 @@ import uuid
 
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-
+from app.core.config import settings
 from app.core.dependencies import get_current_user
 from app.db.database import get_db
 from app.models.user import User
@@ -108,3 +108,30 @@ def send_candidate_decision(
             status_code=500,
             detail=f"Failed to send email: {str(exc)}",
         )
+
+@router.get("/smtp-test")
+def smtp_test(
+    current_user: User = Depends(get_current_user),
+):
+    import socket
+
+    try:
+        connection = socket.create_connection(
+            (settings.SMTP_HOST, settings.SMTP_PORT),
+            timeout=10,
+        )
+        connection.close()
+
+        return {
+            "smtp_reachable": True,
+            "host": settings.SMTP_HOST,
+            "port": settings.SMTP_PORT,
+        }
+
+    except Exception as exc:
+        return {
+            "smtp_reachable": False,
+            "host": settings.SMTP_HOST,
+            "port": settings.SMTP_PORT,
+            "error": str(exc),
+        }
