@@ -9,12 +9,16 @@ from app.api.resumes import (
 )
 from dotenv import load_dotenv
 from fastapi.middleware.cors import CORSMiddleware
+from app.db.init_db import init_db
 load_dotenv()
 app = FastAPI(
     title="TalentIQ API",
     version="1.0.0",
 )
-
+@app.on_event("startup")
+def startup_event():
+    init_db()
+    
 app.include_router(auth_router)
 app.include_router(health_router)
 app.include_router(jobs_router)
