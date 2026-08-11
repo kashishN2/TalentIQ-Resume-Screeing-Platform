@@ -4,6 +4,7 @@ from app.api.auth import router as auth_router
 from app.api.health import router as health_router
 import app.core.storage
 from app.api import analysis, emails
+from app.api.emails import smtp_router
 from app.api.resumes import (
     router as resume_router
 )
@@ -29,7 +30,9 @@ app.include_router(
 app.include_router(
     emails.router
 )
-
+app.include_router(
+    smtp_router
+)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[

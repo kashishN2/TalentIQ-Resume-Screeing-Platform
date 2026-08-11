@@ -109,7 +109,13 @@ def send_candidate_decision(
             detail=f"Failed to send email: {str(exc)}",
         )
 
-@router.get("/smtp-test")
+smtp_router = APIRouter(
+    prefix="/smtp",
+    tags=["SMTP Diagnostics"],
+)
+
+
+@smtp_router.get("/test")
 def smtp_test(
     current_user: User = Depends(get_current_user),
 ):
